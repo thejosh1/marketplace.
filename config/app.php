@@ -166,7 +166,7 @@ return [
          * Package Service Providers...
          */
         Gloudemans\Notify\LaravelNotifyServiceProvider::class,
-        Gloudemans\Shoppingcart\ShoppingcartServiceProvider::class,
+        //Gloudemans\Shoppingcart\ShoppingcartServiceProvider::class,
 
         /*
          * Application Service Providers...

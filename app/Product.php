@@ -21,7 +21,7 @@ class Product extends Model
         'columns' => [
             'products.name' => 10,
             'products.description' => 1,
-            'categories.name' => 5,
+            'categories.title' => 5,
         ],
         'joins' => [
             'categories' => ['category_id','categories.id'],

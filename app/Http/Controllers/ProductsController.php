@@ -9,13 +9,13 @@ use App\Category;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductsCollection;
-use nicolaslopezj\Searchable\SearchableTrait;
+use Nicolaslopezj\Searchable\SearchableTrait;
 use Illuminate\Support\Facades\DB;
 
 class ProductsController extends Controller
 {
 
-    use SoftDeletes, SearchableTrait, getDiscount;
+    use SoftDeletes, SearchableTrait;
 
 
     public function store(Request $request)
@@ -68,7 +68,7 @@ class ProductsController extends Controller
         //upload image
         $image = $request->file('file');
 
-        if ($image) {
+        if ($image->hasFile) {
             $imageName = time() . getClientOriginalName();
             $image->move('images', $imageName);
             $imagePath = "/images/$imageName";
@@ -140,15 +140,11 @@ class ProductsController extends Controller
 
     public function list(Request $request)
     {
-        $validator = Validator::make($request->all, [
+        $validator = Validator::make($request->all(), [
             'q' => 'nullable|string|min:3',
         ]);
 
-        $query = ['q'];
-
-        $data = collect(request()->all)->toArray();
-
-        $discount = $data['price']->with(getDiscount); 
+        $query = ('q');
 
         $product = Product::where('Products.id', '>', '0')->with('categories');
 
@@ -175,7 +171,7 @@ class ProductsController extends Controller
             $product->delete();
             return response()->json([
                 'data' => true
-            ], 201);
+            ], 204);
         } else {
             return response()->json([
                 'data' => false
@@ -216,7 +212,7 @@ class ProductsController extends Controller
 
     public function restoreImage($id)
     {
-        $id = Product::onlyTrashed()->find($id);
+        $id = Product::onlyTrashed()->find('image');
         if ($id) {
             return response()->json([
                 'data' => true
