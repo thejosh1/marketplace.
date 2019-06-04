@@ -28,6 +28,7 @@ class CartsController extends Controller
 
     public function UpdateCart(Request $request, $id)
     {
+        $id = Cart::find($id);
         $cart = Cart::Update($request->id, $request->name, $request->qty, $request->price)->associate(Product);
 
         if ($cart) {
@@ -89,10 +90,10 @@ class CartsController extends Controller
 
     public function list(Request $request)
     {
-        $cart = Cart::content();
+        $cart = Cart::content()->paginate(10);
 
         $cart->count();
-        $cart->total()->where(['price', 'qty']);
+        $cart->total()->where(['price', 'qty'])->tax()->where(['price', 'qty']);
 
         if ($cart) {
             $cart->paginate(5);
@@ -103,6 +104,19 @@ class CartsController extends Controller
             return response()->json([
                 'data' => false
             ], 401)->with(messages('you dont have any item in your cart yet'));
+        }
+    }
+
+    public function restoreCart(Request $request, $id){
+        $id = Cart::onlyTrashed()->findorFail($id)->restore();
+        if($id) {
+            return response()->json([
+                'data' => true
+            ], 201);
+        } else {
+            return response()->json([
+                'data' => false
+            ], 404);
         }
     }
 }

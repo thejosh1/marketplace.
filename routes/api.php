@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -34,3 +35,10 @@ Route::delete('/categories/{$id}', 'CategoriesController@delete');
 Route::get('categories{$id}', 'CategoriesController@restore');
 Route::delete('/categories/image/{$id}', 'CategoriesController@deleteImage');
 Route::get('/categories/{$id}', 'CategoriesController@show');
+
+Route::get('/cart', 'CartsController@list');
+Route::post('/cart/{$id}', 'CartsController@addItem');
+Route::post('/cart/{$id}', 'CartsController@deleteItem');
+Route::put('/cart/{$id}', 'CartsController@UpdateCart');
+Route::get('/cart/{$id}', 'CartsController@restoreCart');
+
