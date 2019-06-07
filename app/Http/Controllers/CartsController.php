@@ -34,7 +34,7 @@ class CartsController extends Controller
         if ($cart) {
             return response()->json([
                 'data' => true
-            ], 201);
+            ], 200);
         } else {
             return response()->json([
                 'data' => false
@@ -49,7 +49,7 @@ class CartsController extends Controller
             Cart::remove($cart);
             return response()->json([
                 'data' => true
-            ], 206);
+            ], 204);
         } else {
             return response()->json(false, 500);
         }

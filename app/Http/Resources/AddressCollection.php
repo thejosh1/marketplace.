@@ -3,8 +3,9 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\ResourceCollection;
+use Faker\Provider\nl_NL\Address;
 
-class CartsCollection extends ResourceCollection
+class AddressCollection extends ResourceCollection
 {
     /**
      * Transform the resource collection into an array.
@@ -14,14 +15,14 @@ class CartsCollection extends ResourceCollection
      */
     public function toArray($request)
     {
-        return[
-            'data' => CartResource::collection($this->collection),
-            'paginate' => [
+        return [
+            'data' => AddressResource::collection($this->collection),
+            'pagination' => [
                 'total' => $this->total(),
                 'count' => $this->count(),
                 'per_page' => $this->perpage(),
                 'current_page' => $this->currentpage(),
-                'total_page' => $this->lastpage(),
+                'total_page' => $this->totalpage(),
             ]
         ];
     }

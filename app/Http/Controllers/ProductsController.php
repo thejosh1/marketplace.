@@ -157,11 +157,7 @@ class ProductsController extends Controller
         $product = $product->paginate($length);
         $data = new ProductsCollection($product);
 
-        if ($validator->fails()) {
-            return response()->json($validator->messages, 422);
-        } else {
-            return response()->json($data);
-        }
+        return response()->json($data);
     }
 
     public function delete(Request $request)

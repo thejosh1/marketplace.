@@ -18,7 +18,15 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-//Route::post('register', 'Auth\RegisterController@registered');
+Route::prefix('v1')->group(function(){
+    Route::post('login', 'Api\AuthController@login');
+    Route::post('register', 'Api\AuthController@register');
+    Route::group(['middleware' => 'auth:api'], function(){
+        Route::post('getUser', 'Api\AuthController@getUser');
+    });
+});
+
+Route::post('forgot/password', 'ForgotpasswordController')->name('forgot.password');
 
 Route::get('/products', 'ProductsController@list');
 Route::post('/products/{$id}', 'ProductsController@store');

@@ -20,7 +20,7 @@ class CreateProductsreviewTable extends Migration
             $table->foreign('product_id')->references('id')->on('products')->onDelete('cascade')->onUpdate('cascade');
             $table->text('description', 300)->nullable;
             $table->string('rating')->nullable();
-            $table->string('approved')->nullable();
+            $table->boolean('approved')->nullable()->default(1);
             $table->timestamps();
         });
     }

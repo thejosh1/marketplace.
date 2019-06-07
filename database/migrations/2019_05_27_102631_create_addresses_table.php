@@ -15,19 +15,21 @@ class CreateAddressesTable extends Migration
     {
         Schema::create('addresses', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->integer('user_id');
+            $table->unsignedBigInteger('user_id');
             $table->string('country');
             $table->string('state');
             $table->string('local_government');
             $table->string('region');
-            $table->string('postal_code');
-            $table->string('longitude');
-            $table->string('latitude');
+            $table->integer('postal_code');
+            $table->integer('longitude',20,15)->nullable();
+            $table->integer('latitude',20,15)->nullable();
             $table->string('nearest_landmark')->nullable();
             $table->string('street_address');
+            $table->boolean('parseable')->default(1);
             $table->timestamps();
+            $table->softDeletes();
 
-           // $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

@@ -5,10 +5,12 @@ namespace App;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Auth\Passwords\CanResetPassword as IlluminateCanResetPassword;
 
 class User extends Authenticatable
 {
-    use Notifiable;
+    use Notifiable, HasApiTokens, IlluminateCanResetPassword;
 
     /**
      * The attributes that are mass assignable.
@@ -25,7 +27,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 'remember_token', 'api_token',
+        'password', 'remember_token',
     ];
 
     /**
@@ -48,6 +50,11 @@ class User extends Authenticatable
     public function orders()
     {
         return $this->hasMany('App\order');
+    } 
+
+    public function address()
+    {
+        return $this->hasOne('App\Address');
     }
 }
 
