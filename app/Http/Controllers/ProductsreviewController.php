@@ -7,10 +7,11 @@ use Nicolaslopezj\Searchable\SearchableTrait;
 use Lcobucci\JWT\Claim\Validatable;
 use App\ProductReview;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProductsreviewController extends Controller
 {
-    use SearchableTrait;
+    use SearchableTrait, SoftDeletes;
     /**
      * Display a listing of the resource.
      *
@@ -78,8 +79,7 @@ class ProductsreviewController extends Controller
                 'data' => false
             ], 500);
         }
-
-
+    }
 
         /**
          * Display the specified resource.
@@ -87,9 +87,9 @@ class ProductsreviewController extends Controller
          * @param  int  $id
          * @return \Illuminate\Http\Response
          */
-    public function show($id)
+    public function show(ProductReview $productReview)
     {
-        //
+        return $productReview;
     }
 
     /**
@@ -99,9 +99,31 @@ class ProductsreviewController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'header' => 'nullable|string|max:250',
+            'text' => 'nullable|string|max:250',
+            'rating' => 'nullable|string|max:250',
+            'approved' => 'nullable|boolean|default:1'
+        ]);
+
+        if ($validator->fails) {
+            return response()->json($validator->messages, 422);
+        }
+
+        $data = collect($request->all())->toArray();
+        $review = ProductReview::update($data);
+
+        if ($review) {
+            return response()->json([
+                'data' => $review
+            ], 201);
+        } else {
+            return response()->json([
+                'data' => false
+            ], 500);
+        }
     }
 
     /**
@@ -110,8 +132,32 @@ class ProductsreviewController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //
+        $id = (int)$request->route('id');
+
+         if($id) {
+            $review = ProductReview::find($id);
+            $review->delete;
+            return response()->json([
+                'data' => true
+            ], 204);
+        } else {
+            return response()->json(false, 500);
+        }
+    }
+
+    public function restore(Request $request)
+    {
+        $id = (int)$request->route('id');
+
+         if($id) {
+            ProductReview::onlyTrashed()->findorFail($id)->restore();
+            return response()->json([
+                'data' => true
+            ], 201);
+        } else {
+            return response()->json(false, 404);
+        }
     }
 }
