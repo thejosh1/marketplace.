@@ -3,61 +3,49 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Mail\OrderShipped;
+use App\Order;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Mail;
 
 class OrdersController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    public function Orders($type = '')
     {
-        //
+        if ($type == 'pending') {
+            $orders = Order::where('delivered', '0')->get();
+        } elseif ($type == 'delivered') {
+            $orders = Order::where('delivered', '1')->get();
+        } else {
+            $orders = Orders::all();
+        }
+        if ($orders) {
+            return response()->json([
+                'data' => $orders
+            ], 200);
+        } else {
+            return response()->json(false, 404);
+        }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+    public function ToggleOrders(Request $request, $orderId) 
+    { 
+        $order = Order::find($orderId);
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
+        if($request->has('delivered')) {
+            $time = Carbon::now()->addMinute(1);
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
+            Mail::to($order->user())->later($time, new OrderShipped($order));
+        } else {
+            $order->delivered = "0";
+        }
+        $order->save();
+        if($order) {
+            return response()->json([
+                'data' => $order
+            ], 200);
+        } else {
+            return response()->json(false, 404);
+        }
     }
 }

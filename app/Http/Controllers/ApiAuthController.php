@@ -57,14 +57,4 @@ class ApiAuthController extends Controller
             ], 401);
         }
     }
-
-    public function forgotPassword(Request $request)
-    {
-        $data = Auth::attempt(['email' => $request->email, 'password' => $request->password]);
-        $password = DB::table('users')->get('password');
-        $email = DB::table('users')->get('email');
-        if (!$data['password'] === $password && $data['email'] === $email) {
-            $result =  SendsPasswordResetEmails;
-        }
-    }
 }

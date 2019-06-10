@@ -42,7 +42,8 @@ class CategoriesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|required|max:255',
-        ]);
+            'image' => 'image|mimes:jpeg,jpg,png|max:10000'
+        ], $validatorMessages);
 
         if ($validator->fails()) {
             return response()->json($validator->messages(), 422);
@@ -52,6 +53,13 @@ class CategoriesController extends Controller
             $data = collect(request()->all()->except('image'))->$products->toArray();
 
             //upload the image
+            $validator = Validator::make($request->all(), [
+                'image' => 'image|mimes:jpeg,jpg,png|max:10000'
+            ]);
+            if ($validator->fails) {
+                return response()->json(false, 401);
+            }
+
             $image = $request->image;
             if ($image) {
                 $imageName = $image->getClientOriginalName();
@@ -97,7 +105,8 @@ class CategoriesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|required|max:255',
-        ]);
+            'image' => 'image|mimes:jpeg,jpg,png|max:10000'
+        ], $validatorMessages);
 
         if ($validator->fails()) {
             return response()->json($validator->messages(), 422);
@@ -182,12 +191,12 @@ class CategoriesController extends Controller
     }
 
     public function deleteImage($productId, Request $request)
-    { 
+    {
         $pcategory = Category::find($productId);
 
         $image = $request['image'];
 
-        if($image->hasFile) {
+        if ($image->hasFile) {
             $image->delete;
             return response()->json([
                 'data' => true
@@ -197,10 +206,11 @@ class CategoriesController extends Controller
         }
     }
 
-    public function restoreImage($productId, Request $request) {
+    public function restoreImage($productId, Request $request)
+    {
         $id = Category::onlyTrashed()->findorFail('image');
 
-        if($id->hasFile) {
+        if ($id->hasFile) {
             return response()->json([
                 'data' => true
             ], 201);

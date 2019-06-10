@@ -19,14 +19,14 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
 });
 
 Route::prefix('v1')->group(function(){
-    Route::post('login', 'Api\AuthController@login');
-    Route::post('register', 'Api\AuthController@register');
+    Route::post('/login', 'Api\AuthController@login');
+    Route::post('/register', 'Api\AuthController@register');
     Route::group(['middleware' => 'auth:api'], function(){
-        Route::post('getUser', 'Api\AuthController@getUser');
+        Route::post('/getUser', 'Api\AuthController@getUser');
     });
 });
 
-Route::post('forgot/password', 'ForgotpasswordController')->name('forgot.password');
+Route::post('/forgot/password', 'ForgotpasswordController')->name('forgot.password');
 
 Route::get('/products', 'ProductsController@list');
 Route::post('/products/{$id}', 'ProductsController@store');
@@ -35,9 +35,9 @@ Route::post('/products/image/{$id}', 'ProductsController@uploadImage');
 Route::delete('/products/{$id}', 'ProductsController@delete');
 Route::get('products/{$id}', 'ProductsController@restore');
 Route::delete('products/image/{$id}', 'ProductsController@deleteImage');
-Route::get('products/{$id}', 'ProductsController@show');
+Route::get('productsc/{$id}', 'ProductsController@show');
 
-Route::get('/categories', 'CategoriesController@index');
+Route::get('/', 'CategoriesController@index');
 Route::post('/categories/{$id}', 'CategoriesController@store');
 Route::put('/categories/{$id}', 'CategoriesController@update');
 Route::post('/categories/image/{$id}', 'ProductsController@uploadImage');
@@ -52,3 +52,8 @@ Route::post('/cart/{$id}', 'CartsController@deleteItem');
 Route::put('/cart/{$id}', 'CartsController@UpdateCart');
 Route::get('/cart/{$id}', 'CartsController@restoreCart');
 
+
+Route::get('/checkout', 'CheckoutController@index')->name('checkout.index');
+
+// Route::view('/checkout', 'checkout');
+// Route::view('/thankyou', 'thankyou');

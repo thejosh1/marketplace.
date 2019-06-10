@@ -21,8 +21,8 @@ class CreateAddressesTable extends Migration
             $table->string('local_government');
             $table->string('region');
             $table->integer('postal_code');
-            $table->integer('longitude',20,15)->nullable();
-            $table->integer('latitude',20,15)->nullable();
+            $table->integer('longitude')->nullable();
+            $table->integer('latitude')->nullable();
             $table->string('nearest_landmark')->nullable();
             $table->string('street_address');
             $table->boolean('parseable')->default(1);
