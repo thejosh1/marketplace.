@@ -17,7 +17,7 @@ class OrdersController extends Controller
         } elseif ($type == 'delivered') {
             $orders = Order::where('delivered', '1')->get();
         } else {
-            $orders = Orders::all();
+            $orders = Order::all();
         }
         if ($orders) {
             return response()->json([

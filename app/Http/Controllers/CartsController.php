@@ -6,13 +6,12 @@ use Illuminate\Http\Request;
 use App\Http\Resources\CartResource;
 use App\Http\Resource\CartsCollection;
 use App\Product;
-use Gloudemans\Shoppingcart\CanBeBought;
-use App\Cart;
+use Gloudemans\Shoppingcart\Facades\Cart;
+//use App\Cart;
 use Illuminate\Mail\Message;
-
 class CartsController extends Controller
 {
-    use Gloudemans\Shoppingcart\CanBeBought;
+    use Gloudemans\Shoppingcart\Cart;
     public function addItem(Request $request)
     {
         $cart = Cart::add($request->id, $request->name, $request->price, $request->qty)->associate(Product)->paginate(10);

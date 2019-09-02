@@ -19,11 +19,12 @@ class CreateUsersTable extends Migration
             $table->string('last_name');
             $table->string('username')->nullable();
             $table->enum('gender',['Male', 'Female'])->nullable();
-            $table->string('contact');
+            $table->string('phone')->unique();
             $table->string('api_token', 60)->unique()->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->integer('role_id');
             $table->rememberToken();
             $table->timestamps();
         });

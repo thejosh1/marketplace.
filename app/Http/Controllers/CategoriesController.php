@@ -9,6 +9,7 @@ use App\Http\Resources\CategoriesCollection;
 use App\Category;
 use Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
+//use App\Http\Middleware\isAdmin;
 
 class CategoriesController extends Controller
 {
@@ -20,7 +21,7 @@ class CategoriesController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::paginate(6);
         return CategoryResource::collection($categories)->additional(['meta' => [
             'version' => '1.0.0',
             'API_base_url' => url('/'),
@@ -42,15 +43,20 @@ class CategoriesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'name' => 'string|required|max:255',
-            'image' => 'image|mimes:jpeg,jpg,png|max:10000'
+            'image' => 'image|mimes:jpeg,jpg,png|max:10000',
+            'slug' => 'string|required'
         ], $validatorMessages);
 
         if ($validator->fails()) {
             return response()->json($validator->messages(), 422);
 
             //collect all the values to array
-            $products = Product::pluck('name', 'image', 'id');
-            $data = collect(request()->all()->except('image'))->$products->toArray();
+
+            $title = $request['title'];
+            $slug = $request['slug'];
+
+            //$products = Product::pluck('name', 'image', 'id');
+            //$data = collect(request()->all()->except('image'))->toArray();
 
             //upload the image
             $validator = Validator::make($request->all(), [
@@ -64,11 +70,16 @@ class CategoriesController extends Controller
             if ($image) {
                 $imageName = $image->getClientOriginalName();
                 $image->move('image', $imageName);
-                $data['image'] = $imageName;
             }
-            $result = Category::create($data);
 
-            if ($result) {
+            $category = new Category();
+            $category->title = $title;
+            $category->slug = $slug;
+            $category->image = $image;
+            $category->save();
+            // $result = Category::auth()->user()->isAdmin()->create($data);
+
+            if ($category->save()) {
                 return response()->json([
                     'data' => true
                 ], 201);
@@ -112,8 +123,11 @@ class CategoriesController extends Controller
             return response()->json($validator->messages(), 422);
 
             //collect all the values to array
-            $products = Product::pluck('name', 'image', 'id');
-            $data = collect(request()->all()->except('image'))->$products->toArray();
+            // $products = Product::pluck('name', 'image', 'id');
+            // $data = collect(request()->all()->except('image'))->$products->toArray();
+            $title = $request['title'];
+            $slug = $request['slug'];
+            
 
             //upload the image
             $image = $request->image;
@@ -122,9 +136,15 @@ class CategoriesController extends Controller
                 $image->move('image', $imageName);
                 $data['image'] = $imageName;
             }
-            $result = Category::update($data);
 
-            if ($result) {
+            $category = new Category();
+            $category->title = $title;
+            $category->slug = $slug;
+            $category->image = $image;
+            $category->update();
+            //$result = Category::update($data);
+
+            if ($category->update()) {
                 return response()->json([
                     'data' => true
                 ], 201);

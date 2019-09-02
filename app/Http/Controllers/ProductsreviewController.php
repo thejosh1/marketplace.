@@ -8,6 +8,7 @@ use Lcobucci\JWT\Claim\Validatable;
 use App\ProductReview;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Product;
 
 class ProductsreviewController extends Controller
 {
@@ -54,13 +55,14 @@ class ProductsreviewController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, Product $ProductId)
     {
         $validator = Validator::make($request->all(), [
             'header' => 'nullable|string|max:250',
             'text' => 'nullable|string|max:250',
             'rating' => 'nullable|string|max:250',
-            'approved' => 'nullable|boolean|default:1'
+            'approved' => 'nullable|boolean|default:1',
+            'product_id' => 'required|integer|exists:products, id'
         ]);
 
         if ($validator->fails) {
@@ -68,6 +70,7 @@ class ProductsreviewController extends Controller
         }
 
         $data = collect($request->all())->toArray();
+        $data['product_id'] = $ProductId;
         $review = ProductReview::create($data);
 
         if ($review) {
@@ -99,7 +102,7 @@ class ProductsreviewController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request)
+    public function update(Request $request, Product $ProductId)
     {
         $validator = Validator::make($request->all(), [
             'header' => 'nullable|string|max:250',
@@ -113,6 +116,7 @@ class ProductsreviewController extends Controller
         }
 
         $data = collect($request->all())->toArray();
+        $data['product_id'] = $ProductId;
         $review = ProductReview::update($data);
 
         if ($review) {

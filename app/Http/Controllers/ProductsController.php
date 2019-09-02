@@ -6,15 +6,22 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Product;
 use App\Category;
+use App\ProductImage;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Http\Resources\ProductResource;
 use App\Http\Resources\ProductsCollection;
 use Nicolaslopezj\Searchable\SearchableTrait;
-use Illuminate\Support\Facades\DB;
+//use App\Http\Middleware\CheckUserRole;
+//use App\Events\ProductInformationFetched;
+use App\Attribute;
+use App\Value;
+// use DB;
+use App\User;
+use App\Role;
+use Illuminate\Support\Facades\Auth;
+use App\ProductReview;
 
 class ProductsController extends Controller
 {
-
     use SoftDeletes, SearchableTrait;
 
 
@@ -34,7 +41,10 @@ class ProductsController extends Controller
             'original_price' => 'required',
             'discount_price' => 'required',
             'in_stock' => 'required',
-            'image' => 'image|mimes:jpeg,jpg,png|max:10000'
+            'image' => 'image|mimes:jpeg,jpg,png|max:10000',
+            // 'color' => 'string|nullable',
+            // 'size' => 'string|nullable',
+            // 'weight' => 'float|nullable',
         ], $validationMessages);
 
         if ($validator->fails()) {
@@ -44,19 +54,23 @@ class ProductsController extends Controller
         $categories = Category::pluck('name', 'id');
         $data = collect(request()->all()->except('image'))->$categories()->toArray();
 
+
         //define a function to upload the product image
         $image = $request->image;
+        $this->$image = new ProductImage();
         if ($image) {
             $imageName = $image->getClientOriginalName();
             $image->move('image', $imageName);
             $data['image'] = $imageName;
         }
-        $result = Product::create($data);
+
+        $product = Product;
+        $result = $product()->create($data);
 
         if ($result) {
             return response()->json(['data' => true], 201);
         } else {
-            return response()->json(false, 500);
+            return response()->json(false, 401);
         }
     }
 
@@ -64,6 +78,7 @@ class ProductsController extends Controller
     public function uploadImage($productId, Request $request)
     {
         $product = Product::find($productId);
+        // $auth = Auth::user()->hasRole('merchant');
 
         //upload image
         $image = $request->file('file');
@@ -78,7 +93,7 @@ class ProductsController extends Controller
         if ($image) {
             return response()->json(['data' => true], 201);
         } else {
-            return response()->json(false, 500);
+            return response()->json(false, 401);
         }
     }
 
@@ -126,13 +141,20 @@ class ProductsController extends Controller
         if ($result) {
             return response()->json(['data' => true], 201);
         } else {
-            return response()->json(false, 500);
+            return response()->json(false, 401);
         }
     }
 
-    public function show(Product $product)
+    public function show(Request $request)
     {
+        $id = (int)$request->route('id');
+        $product = Product::find($id);
+       // $review = ProductReview::pluck('header', 'description', 'rating', 'approved', 'product_id');
         return $product;
+
+        return response()->json([
+            'data' => true
+        ], 200);
 
         //link with product review
 
@@ -141,21 +163,25 @@ class ProductsController extends Controller
     public function list(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'q' => 'nullable|string|min:3',
+            'q' => 'nullable|min:3'
         ]);
 
-        $query = ('q');
-
-        $product = Product::where('Products.id', '>', '0')->with('categories');
-
-        if ($query) {
-            $product = $product->search($query);
+        if($validator->fails()){
+            return response()->json($validator->messages(), 422);
         }
 
+        $query = $request['q'];
+
+        $product = Product::where('products.id', '>', '0')->with('categories');
+        //$data = collect($request->all())->toArray();
+
+        if ($query) {
+            $products = $product->search($query);
+        }
         //insert search parameters
         $length = (int)(empty($request['perpage']) ? 15 : $request['perpage']);
-        $product = $product->paginate($length);
-        $data = new ProductsCollection($product);
+        $products = $product->paginate($length);
+        $data = new ProductsCollection($products);
 
         return response()->json($data);
     }
@@ -164,7 +190,7 @@ class ProductsController extends Controller
     {
         $id = (int)$request->route('id');
         if ($product = Product::find($id)) {
-            $product->delete();
+            $product->auth()->user()->isAdmin()->delete();
             return response()->json([
                 'data' => true
             ], 204);
@@ -177,13 +203,27 @@ class ProductsController extends Controller
 
     public function restore($id)
     {
+        // if (Auth::user()->isAdmin) {
+        //     $admin_id = auth()->user()->id;
+        // }
+
         $id = Product::onlyTrashed()->findorFail($id)->restore();
-        if ($id) {
-            return response()->json([
-                'data' => true
-            ], 200);
+        /*i know im not supposed to do this but what the hell
+        im trying to get admin authorization but id learn */
+        if (Auth::user()->isAdmin) {
+            if ($id) {
+                return response()->json([
+                    'data' => true
+                ], 200);
+            } else {
+                return response()->json([
+                    'error' => 'for some reason the product is not here'
+                ], 404);
+            }
         } else {
-            return response()->json(false, 500);
+            return response()->json([
+                'error' => 'you are not authorized'
+            ], 401);
         }
     }
 
@@ -195,26 +235,36 @@ class ProductsController extends Controller
         //get the image
         $image = $request['image'];
         if ($image) {
-            $image->delete();
+            $auth = Auth::user()->isAdmin;
+            $image->$auth->delete();
             return response()->json([
                 'data' => true
             ], 200);
         } else {
             return response()->json([
                 'data' => false
-            ], 404);
+            ], 401);
         }
     }
 
     public function restoreImage($id)
     {
-        $id = Product::onlyTrashed()->find('image');
-        if ($id) {
-            return response()->json([
-                'data' => true
-            ], 201);
+        $id = Product::onlyTrashed()->find($id)->where('image')->restore();
+        /* i know here we are again 
+        i gotta find a better way to check 
+        if user is admin without nesting an if in an if */
+        if (Auth::user()->isAdmin) {
+            if ($id) {
+                return response()->json([
+                    'data' => true
+                ], 201);
+            } else {
+                return response()->json(false, 401);
+            }
         } else {
-            return response()->json(false, 500);
+            return response()->json([
+                'error' => 'not authorized'
+            ], 401);
         }
     }
 }

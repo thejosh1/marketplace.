@@ -166,14 +166,14 @@ return [
          * Package Service Providers...
          */
         Gloudemans\Notify\LaravelNotifyServiceProvider::class,
-        //Gloudemans\Shoppingcart\ShoppingcartServiceProvider::class,
+        Gloudemans\Shoppingcart\ShoppingcartServiceProvider::class,
 
         /*
          * Application Service Providers...
          */
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 

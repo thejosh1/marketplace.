@@ -3,14 +3,13 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Gloudemans\Shoppingcart\Facades\Cart;
+use Illuminate\Support\Facades\Auth;
 
 class Order extends Model
 {
     protected $fillable = [
-        'billing_name', 'billing_email', 'billing_address', 'billing_state',
-        'billing_city', 'billing_province', 'billing_lga', 'billing_phone',
-        'billing_name_on_card', 'billing_tax', 'billing_total', 'error', 'billing_postal_code',
-        'billing_discount', 'billing_discount_code', 'billing_subtotal'
+        'total', 'delivered'
     ];
     public function users()
     {
@@ -19,6 +18,24 @@ class Order extends Model
 
     public function product()
     {
-        return $this->belongsToMany('App\product')->withPivot('qty');
+        return $this->belongsToMany('App\product')->withPivot('qty', 'total');
+    }
+
+    public static function createOrder() 
+    {
+        $user = Auth::user();
+        $order = $user->orders()->create([
+            'total' => Cart::total(),
+            'delivered' => 0
+        ]);
+
+        $cartItems = Cart::content();
+        foreach($cartItems as $cartItem) {
+            $order->orderItems()->attach($cartItem->id, [
+                'qty' => $cartItem->qty,
+                'total' => $cartItem->qty * $cartItem->price
+            ]);
+        }
+
     }
 }

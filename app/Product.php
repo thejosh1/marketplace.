@@ -5,6 +5,10 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Nicolaslopezj\Searchable\SearchableTrait;
+use App\Http\Middleware\isAdmin;
+use Symfony\Component\HttpFoundation\Request;
+use Illuminate\Support\Facades\Auth;
+use App\User;
 
 class Product extends Model
 {
@@ -24,19 +28,25 @@ class Product extends Model
             'categories.title' => 5,
         ],
         'joins' => [
-            'categories' => ['category_id','categories.id'],
+            'categories' => ['category_id', 'categories.id'],
         ],
-     ];
+    ];
 
 
     protected $fillable = ['name', 'category_id', 'original_price', 'description', 'in_stock'];
 
-    public function categories (){
+    public function categories()
+    {
         return $this->belongsTo('App\Category');
     }
 
-    public function getDiscount(Request $request, $id)
-    { 
+    public function Images()
+    {
+        return $this->hasMany('App\ProductImages');
+    }
+
+    public function getDiscount($id)
+    {
         // $validator = Validator::make($request->all);
 
         // if($validator) {
@@ -53,11 +63,21 @@ class Product extends Model
         $price = DB::table('products')->where('price')->find($product);
 
 
-        if($price) {
+        if ($price) {
             $discountPrice = function ($price) {
-                $this->sum(10/100*$price);
+                $this->sum(10 / 100 * $price);
             };
         }
-
     }
+
+    // public static function isAdmin()
+    // {
+    //     $admin = Auth::user()->isAdmin;
+    // }
+
+    // public static function getAdminId() {
+    //     if (Auth::user()->isAdmin) {
+    //         $admin_id = auth()->user()->id;
+    //     }
+    // }
 }

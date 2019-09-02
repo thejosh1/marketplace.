@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class AddProductImageToProducts extends Migration
+class AddIsAdminToUsers extends Migration
 {
     /**
      * Run the migrations.
@@ -13,8 +13,8 @@ class AddProductImageToProducts extends Migration
      */
     public function up()
     {
-        Schema::table('products', function (Blueprint $table) {
-            $table->string('image')->nullable();
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('is_Admin')->default('default');
         });
     }
 
@@ -25,8 +25,8 @@ class AddProductImageToProducts extends Migration
      */
     public function down()
     {
-        Schema::table('products', function (Blueprint $table) {
-            //
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropIfexists('users');
         });
     }
 }

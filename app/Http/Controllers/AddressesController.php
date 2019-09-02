@@ -35,8 +35,7 @@ class AddressesController extends Controller
 
         $data = collect($request->all())->toArray();
         $data['user_id'] = Auth::user()->id;
-        $result = Address::create($data);
-
+        $result = new AddressResource($data);
         if (!$request->longitude && !$request->latitude) {
             return $this->geo_location_address;
         }
@@ -93,7 +92,7 @@ class AddressesController extends Controller
     {
         $id = (int)$request->route('id');
         if ($id) {
-            $data =Auth::user()->address()->find($id);
+            $data = Auth::user()->address()->find($id);
             return response()->json([
                 'data' => $data
             ], 200);
@@ -102,34 +101,13 @@ class AddressesController extends Controller
         }
     }
 
-    // public function list(Request $request)
-    // {
-    //     $validator = Validator::make($request->all(), [
-    //         'q' => 'nullable|min:3'
-    //     ]);
-
-    //     $query = ('q');
-    //     $data = collect($request->all())->toArray();
-    //     $addresses = Address::where('Address', '>', '0');
-
-    //     if ($query) {
-    //         $address = $addresses->search($query);
-    //     }
-
-    //     $length = (int)(empty($request['per_page']) ? 15 : $request['per_page']);
-    //     $address = $addresses->paginate($length);
-    //     $data = new AddressCollection($address);
-
-    //     return response()->json($data);
-    // }
-
     public function delete(Request $request)
     {
         $id = (int)$request->route['id'];
 
         if ($id) {
-           $address =Auth::user()->address()->find($id);
-           $address->delete();
+            $address = Auth::user()->address()->find($id);
+            $address->delete();
             return response()->json([
                 'data' => true
             ], 204);
